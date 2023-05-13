@@ -8,8 +8,10 @@ ENV CGO_ENABLED=0
 RUN go mod download && \
     go build -o /dockernetfix .
 
-FROM scratch
+FROM alpine:3.18
 COPY LICENSE /LICENSE
+
+RUN apk --no-cache add nsenter
 
 COPY --from=builder --chown=0:0 --chmod=755 /dockernetfix /dockernetfix
 
