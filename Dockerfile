@@ -1,18 +1,21 @@
 FROM golang:1.20-alpine AS builder
 
-WORKDIR /app
-COPY . /app
-
 ENV CGO_ENABLED=0
 
-RUN go mod download && \
-    go build -o /dockernetfix .
+WORKDIR /app
+
+COPY go.mod /app
+COPY go.sum /app
+RUN go mod download
+
+COPY . /app
+RUN go build -o /docker-netfix .
 
 FROM alpine:3.18
 COPY LICENSE /LICENSE
 
-RUN apk --no-cache add nsenter
+RUN apk --no-cache add util-linux
 
-COPY --from=builder --chown=0:0 --chmod=755 /dockernetfix /dockernetfix
+COPY --from=builder --chown=0:0 --chmod=755 /docker-netfix /docker-netfix
 
-ENTRYPOINT ["/dockernetfix"]
+ENTRYPOINT ["/docker-netfix"]
