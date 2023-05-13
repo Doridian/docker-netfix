@@ -15,7 +15,8 @@ FROM alpine:3.18
 COPY LICENSE /LICENSE
 
 RUN apk --no-cache add util-linux
+RUN mkdir -p /rootfs
 
 COPY --from=builder --chown=0:0 --chmod=755 /docker-netfix /docker-netfix
 
-ENTRYPOINT ["/docker-netfix"]
+ENTRYPOINT ["/docker-netfix", "--rootfs", "/rootfs"]

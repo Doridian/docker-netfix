@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
+	"os/exec"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
@@ -10,17 +13,19 @@ import (
 )
 
 type DockerNetfixClient struct {
-	client *client.Client
+	client     *client.Client
+	rootfsPath string
 }
 
-func NewDockerNetfixClient() (*DockerNetfixClient, error) {
+func NewDockerNetfixClient(rootfsPath string) (*DockerNetfixClient, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
 	return &DockerNetfixClient{
-		client: cli,
+		client:     cli,
+		rootfsPath: rootfsPath,
 	}, nil
 }
 
@@ -31,7 +36,10 @@ func (c *DockerNetfixClient) CheckOnce(ctx context.Context) error {
 	}
 
 	for _, container := range containers {
-		c.netfixCheck(container.ID)
+		err = c.netfixCheck(ctx, container.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -58,13 +66,34 @@ func (c *DockerNetfixClient) Listen(ctx context.Context) error {
 				continue
 			}
 
-			c.netfixCheck(msg.Actor.ID)
+			err = c.netfixCheck(ctx, msg.Actor.ID)
+			if err != nil {
+				return err
+			}
 		case err = <-errChan:
 			return err
 		}
 	}
 }
 
-func (c *DockerNetfixClient) netfixCheck(containerID string) {
+func (c *DockerNetfixClient) netfixCheck(ctx context.Context, containerID string) error {
 	log.Printf("Checking container %s", containerID)
+	container, err := c.client.ContainerInspect(ctx, containerID)
+	if err != nil {
+		return err
+	}
+
+	if container.State == nil {
+		return nil
+	}
+
+	pid := container.State.Pid
+	if pid < 1 {
+		return nil
+	}
+
+	cmd := exec.Command("nsenter", fmt.Sprintf("--net=%s/proc/%d/ns/net", c.rootfsPath, pid), os.Args[0], "--netcheck")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

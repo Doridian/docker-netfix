@@ -1,9 +1,24 @@
 package main
 
-import "context"
+import (
+	"context"
+	"flag"
+)
 
 func main() {
-	client, err := NewDockerNetfixClient()
+	netcheckPtr := flag.Bool("netcheck", false, "Internal")
+	rootfsPath := flag.String("rootfs", "/", "RootFS")
+	flag.Parse()
+
+	if *netcheckPtr {
+		err := netcheck()
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	client, err := NewDockerNetfixClient(*rootfsPath)
 	if err != nil {
 		panic(err)
 	}
