@@ -6,12 +6,12 @@ import (
 )
 
 func main() {
-	netcheckPtr := flag.Bool("netcheck", false, "Internal")
+	netcheckPtr := flag.String("netcheck", "", "Internal")
 	rootfsPath := flag.String("rootfs", "/", "RootFS")
 	flag.Parse()
 
-	if *netcheckPtr {
-		err := netcheck()
+	if *netcheckPtr != "" {
+		err := netcheck(*netcheckPtr)
 		if err != nil {
 			panic(err)
 		}

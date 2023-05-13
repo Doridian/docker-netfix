@@ -36,7 +36,7 @@ func (c *DockerNetfixClient) CheckOnce(ctx context.Context) error {
 	}
 
 	for _, container := range containers {
-		err = c.netfixCheck(ctx, container.ID)
+		err = c.netfixCheck(ctx, container.ID, container.Names[0])
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func (c *DockerNetfixClient) Listen(ctx context.Context) error {
 				continue
 			}
 
-			err = c.netfixCheck(ctx, msg.Actor.ID)
+			err = c.netfixCheck(ctx, msg.Actor.ID, msg.Actor.Attributes["name"])
 			if err != nil {
 				return err
 			}
@@ -76,8 +76,8 @@ func (c *DockerNetfixClient) Listen(ctx context.Context) error {
 	}
 }
 
-func (c *DockerNetfixClient) netfixCheck(ctx context.Context, containerID string) error {
-	log.Printf("Checking container %s", containerID)
+func (c *DockerNetfixClient) netfixCheck(ctx context.Context, containerID string, containerName string) error {
+	log.Printf("Checking container %s", containerName)
 	container, err := c.client.ContainerInspect(ctx, containerID)
 	if err != nil {
 		return err
@@ -92,7 +92,7 @@ func (c *DockerNetfixClient) netfixCheck(ctx context.Context, containerID string
 		return nil
 	}
 
-	cmd := exec.Command("nsenter", fmt.Sprintf("--net=%s/proc/%d/ns/net", c.rootfsPath, pid), os.Args[0], "--netcheck")
+	cmd := exec.Command("nsenter", fmt.Sprintf("--net=%s/proc/%d/ns/net", c.rootfsPath, pid), os.Args[0], "--netcheck", containerName)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
