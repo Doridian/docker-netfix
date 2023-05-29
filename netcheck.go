@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/vishvananda/netlink"
@@ -101,7 +102,7 @@ func netcheck(id string) error {
 		if routeDefaultv4 != nil {
 			err = netlink.RouteDel(routeDefaultv4)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not delete Defaultv4 %w", err)
 			}
 		}
 		routeNewDefaultV4 := &netlink.Route{
@@ -110,7 +111,7 @@ func netcheck(id string) error {
 		}
 		err = netlink.RouteAdd(routeNewDefaultV4)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not add NewDefaultv4 %w", err)
 		}
 	}
 
