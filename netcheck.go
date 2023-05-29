@@ -78,7 +78,7 @@ func netcheck(id string) error {
 		}
 	}
 
-	log.Printf("[%s] Routes: LANv4=%v Defaultv4=%v DefaultULAv6=%v", id, routeLANv4 != nil, routeDefaultv4 != nil, routeDefaultULAv6 != nil)
+	log.Printf("[%s] Routes: LANv4=%v Defaultv4=%v DefaultULAv6=%v", id, routeLANv4, routeDefaultv4, routeDefaultULAv6)
 	if routeLANv4 == nil {
 		log.Printf("[%s] No LANv4 route found, exiting netcheck", id)
 		return nil
