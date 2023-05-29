@@ -84,6 +84,10 @@ func netcheck(id string) error {
 		return nil
 	}
 
+	routeLANGWv4 := routeLANv4.Dst.IP
+	routeLANGWv4[3] = 1
+	log.Printf("[%s] GW IP: LANv4=%v", id, routeLANGWv4)
+
 	if routeDefaultULAv6 != nil {
 		log.Printf("[%s] Deleting DefaultULAv6 route %v", id, routeDefaultULAv6)
 		err = netlink.RouteDel(routeDefaultULAv6)
@@ -92,7 +96,7 @@ func netcheck(id string) error {
 		}
 	}
 
-	if routeDefaultv4 == nil || !routeLANv4.Gw.Equal(routeDefaultv4.Gw) {
+	if routeDefaultv4 == nil || !routeLANGWv4.Equal(routeDefaultv4.Gw) {
 		log.Printf("[%s] Changing Defaultv4 gateway to LANv4", id)
 		if routeDefaultv4 != nil {
 			err = netlink.RouteDel(routeDefaultv4)
@@ -101,7 +105,7 @@ func netcheck(id string) error {
 			}
 		}
 		routeNewDefaultV4 := &netlink.Route{
-			Gw:    routeLANv4.Gw,
+			Gw:    routeLANGWv4,
 			Table: routeLANv4.Table,
 		}
 		err = netlink.RouteAdd(routeNewDefaultV4)
