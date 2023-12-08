@@ -11,7 +11,7 @@ RUN go mod download
 COPY . /app
 RUN go build -o /docker-netfix .
 
-FROM alpine:3.18
+FROM alpine:3.19
 COPY LICENSE /LICENSE
 
 RUN apk --no-cache add util-linux
