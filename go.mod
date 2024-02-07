@@ -3,7 +3,7 @@ module github.com/Doridian/dockernetfix
 go 1.20
 
 require (
-	github.com/docker/docker v25.0.2+incompatible
+	github.com/docker/docker v25.0.3+incompatible
 	github.com/vishvananda/netlink v1.1.0
 )
 
