@@ -88,7 +88,7 @@ func netcheck(id string) error {
 	var routeLANv4 netlink.Route
 	routeLANv4.MTU = -1
 	for _, route := range routesLANv4 {
-		if routeLANv4.MTU < 0 || routeLANv4.LinkIndex > route.MTU {
+		if routeLANv4.MTU < 0 || routeLANv4.LinkIndex < route.LinkIndex {
 			routeLANv4 = route
 		}
 	}
