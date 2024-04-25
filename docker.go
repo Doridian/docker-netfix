@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/client"
 )
@@ -30,7 +31,7 @@ func NewDockerNetfixClient(rootfsPath string) (*DockerNetfixClient, error) {
 }
 
 func (c *DockerNetfixClient) CheckOnce(ctx context.Context) error {
-	containers, err := c.client.ContainerList(ctx, types.ContainerListOptions{})
+	containers, err := c.client.ContainerList(ctx, container.ListOptions{})
 	if err != nil {
 		return err
 	}
