@@ -86,7 +86,7 @@ func netcheck(id string) error {
 	}
 
 	routeLANv4 := routesLANv4[0]
-	for _, route := range routesLANv4 {
+	for _, route := range routesLANv4[1:] {
 		if routeLANv4.LinkIndex < route.LinkIndex {
 			routeLANv4 = route
 		}
