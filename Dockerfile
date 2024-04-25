@@ -9,7 +9,7 @@ COPY go.sum /app
 RUN go mod download
 
 COPY . /app
-RUN go build -o /docker-netfix .
+RUN go build -ldflags="-s -w" -trimpath -o /docker-netfix .
 
 FROM alpine:3.19
 COPY LICENSE /LICENSE
