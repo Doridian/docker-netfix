@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.22.6
 
 require (
-	github.com/docker/docker v27.1.1+incompatible
+	github.com/docker/docker v27.1.2+incompatible
 	github.com/vishvananda/netlink v1.1.0
 )
 
