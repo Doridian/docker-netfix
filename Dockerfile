@@ -11,7 +11,7 @@ RUN go mod download
 COPY . /app
 RUN go build -ldflags="-s -w" -trimpath -o /docker-netfix .
 
-FROM alpine:3.20
+FROM alpine:3.21
 COPY LICENSE /LICENSE
 
 RUN apk --no-cache add util-linux
