@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/client"
@@ -47,7 +46,7 @@ func (c *DockerNetfixClient) CheckOnce(ctx context.Context) error {
 }
 
 func (c *DockerNetfixClient) Listen(ctx context.Context) error {
-	msgChan, errChan := c.client.Events(ctx, types.EventsOptions{})
+	msgChan, errChan := c.client.Events(ctx, events.ListOptions{})
 
 	err := c.CheckOnce(ctx)
 	if err != nil {
