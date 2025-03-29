@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
@@ -48,11 +49,18 @@ func (c *DockerNetfixClient) CheckOnce(ctx context.Context) error {
 func (c *DockerNetfixClient) Listen(ctx context.Context) error {
 	msgChan, errChan := c.client.Events(ctx, events.ListOptions{})
 
-	err := c.CheckOnce(ctx)
-	if err != nil {
-		return err
-	}
+	onceErrchan := make(chan error, 1)
 
+	time.AfterFunc(30*time.Second, func() {
+		log.Println("Performing initial netfix check...")
+		err := c.CheckOnce(ctx)
+		if err != nil {
+			onceErrchan <- err
+		}
+		close(onceErrchan)
+	})
+
+	var err error
 	for {
 		select {
 		case <-ctx.Done():
@@ -72,6 +80,10 @@ func (c *DockerNetfixClient) Listen(ctx context.Context) error {
 			}
 		case err = <-errChan:
 			return err
+		case err = <-onceErrchan:
+			if err != nil {
+				return err
+			}
 		}
 	}
 }
