@@ -103,10 +103,10 @@ func netcheck(id string) error {
 		log.Printf("[%s] Routes: DefaultV4=%v TargetV4=%v", id, routesDefaultV4, routeTargetDefaultV4)
 
 		for _, route := range routesDefaultV4 {
-			if routeTargetDefaultV4.Gw.Equal(route.Gw) {
+			if routeTargetDefaultV4.LinkIndex == route.LinkIndex {
 				continue
 			}
-			log.Printf("[%s] Deleting DefaultV4=%v", id, route.Gw)
+			log.Printf("[%s] Deleting DefaultV4=%v on %v", id, route.Gw, route.LinkIndex)
 			err = netlink.RouteDel(&route)
 			if err != nil {
 				return fmt.Errorf("could not delete DefaultV4 %w", err)
@@ -118,10 +118,10 @@ func netcheck(id string) error {
 		log.Printf("[%s] Routes: DefaultV6=%v TargetV6=%v", id, routesDefaultV6, routeTargetDefaultV6)
 
 		for _, route := range routesDefaultV6 {
-			if routeTargetDefaultV6.Gw.Equal(route.Gw) {
+			if routeTargetDefaultV6.LinkIndex == route.LinkIndex {
 				continue
 			}
-			log.Printf("[%s] Deleting DefaultV6=%v", id, route.Gw)
+			log.Printf("[%s] Deleting DefaultV6=%v on %v", id, route.Gw, route.LinkIndex)
 			err = netlink.RouteDel(&route)
 			if err != nil {
 				return fmt.Errorf("could not delete DefaultV6 %w", err)
