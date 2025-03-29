@@ -20,18 +20,37 @@ func isDefaultRoute(route netlink.Route) bool {
 	return true
 }
 
-func isDockerV6GW(route netlink.Route) bool {
+func isDockerGW(route netlink.Route) bool {
 	if route.Gw == nil {
 		return false
 	}
-	return route.Gw[0] == 0xFD && route.Gw[1] == 0xD8 && route.Gw[2] == 0x23 && route.Gw[3] == 0x57
+	if route.Family == netlink.FAMILY_V4 {
+		return route.Gw[0] == 172 && route.Gw[1] >= 16 && route.Gw[1] <= 31
+	}
+	if route.Family == netlink.FAMILY_V6 {
+		return route.Gw[0] == 0xFD && route.Gw[1] == 0xD8 && route.Gw[2] == 0x23 && route.Gw[3] == 0x57
+	}
+	return false
 }
 
-func isDockerV4GW(route netlink.Route) bool {
-	if route.Dst == nil {
-		return false
+func isBetterRoute(routeBase, routeQuery netlink.Route) bool {
+	if routeBase.Gw == nil {
+		return true
 	}
-	return route.Gw[0] == 172 && route.Gw[1] >= 16 && route.Gw[1] <= 31
+
+	if isDockerGW(routeQuery) {
+		if !isDockerGW(routeBase) {
+			return false
+		}
+	} else if isDockerGW(routeBase) {
+		return true
+	}
+
+	if routeBase.LinkIndex < routeQuery.LinkIndex {
+		return true
+	}
+
+	return false
 }
 
 func netcheck(id string) error {
@@ -44,7 +63,9 @@ func netcheck(id string) error {
 	routesDefaultV4 := make([]netlink.Route, 0)
 	routesDefaultV6 := make([]netlink.Route, 0)
 	var routeTargetDefaultV4 netlink.Route
+	routeTargetDefaultV4.Family = netlink.FAMILY_V4
 	var routeTargetDefaultV6 netlink.Route
+	routeTargetDefaultV6.Family = netlink.FAMILY_V6
 
 	for _, link := range links {
 		routes, err := netlink.RouteList(link, netlink.FAMILY_V4)
@@ -56,12 +77,8 @@ func netcheck(id string) error {
 				continue
 			}
 
-			if !isDockerV4GW(route) {
-				continue
-			}
-
 			routesDefaultV4 = append(routesDefaultV4, route)
-			if routeTargetDefaultV4.Gw == nil || routeTargetDefaultV4.LinkIndex < route.LinkIndex {
+			if isBetterRoute(routeTargetDefaultV4, route) {
 				routeTargetDefaultV4 = route
 			}
 		}
@@ -75,12 +92,8 @@ func netcheck(id string) error {
 				continue
 			}
 
-			if !isDockerV6GW(route) {
-				continue
-			}
-
 			routesDefaultV6 = append(routesDefaultV6, route)
-			if routeTargetDefaultV6.Gw == nil || routeTargetDefaultV6.LinkIndex < route.LinkIndex {
+			if isBetterRoute(routeTargetDefaultV6, route) {
 				routeTargetDefaultV6 = route
 			}
 		}
