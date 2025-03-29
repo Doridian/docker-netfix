@@ -99,9 +99,9 @@ func netcheck(id string) error {
 		}
 	}
 
-	log.Printf("[%s] Routes: DefaultV4=%v DefaultV6=%v", id, routesDefaultV4, routesDefaultV6)
-
 	if len(routesDefaultV4) > 0 {
+		log.Printf("[%s] Routes: DefaultV4=%v TargetV4=%v", id, routesDefaultV4, routeTargetDefaultV4)
+
 		for _, route := range routesDefaultV4 {
 			if routeTargetDefaultV4.Gw.Equal(route.Gw) {
 				continue
@@ -115,6 +115,8 @@ func netcheck(id string) error {
 	}
 
 	if len(routesDefaultV6) > 0 {
+		log.Printf("[%s] Routes: DefaultV6=%v TargetV6=%v", id, routesDefaultV6, routeTargetDefaultV6)
+
 		for _, route := range routesDefaultV6 {
 			if routeTargetDefaultV6.Gw.Equal(route.Gw) {
 				continue
