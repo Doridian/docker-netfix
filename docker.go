@@ -53,10 +53,7 @@ func (c *DockerNetfixClient) Listen(ctx context.Context) error {
 
 	time.AfterFunc(30*time.Second, func() {
 		log.Println("Performing initial netfix check...")
-		err := c.CheckOnce(ctx)
-		if err != nil {
-			onceErrchan <- err
-		}
+		onceErrchan <- c.CheckOnce(ctx)
 		close(onceErrchan)
 	})
 
